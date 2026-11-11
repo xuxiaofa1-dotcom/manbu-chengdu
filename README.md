@@ -1,23 +1,5 @@
 # 漫步成都 · 1:1 三维城市漫游
 
-按真实比例重建的成都，three.js + WebGPU + TSL 渲染：天府广场、春熙路、远洋太古里、宽窄巷子、锦里、
-武侯祠、文殊院、青羊宫、杜甫草堂、望江楼、安顺廊桥、九眼桥、人民公园、成都博物馆、四川科技馆、
-四川广播电视塔（天府熊猫塔）都在真实位置上；街道、街区、公园、江水照 OpenStreetMap 实测数据生成。
+按真实比例重建的成都（three.js + WebGPU）。在线访问：https://chengdu.breakeros.com
 
-六种出行方式：步行 · 打车（绿色成都出租）· 共享单车 · 电马儿 · 观光直升机 · **骑大熊猫**（按 `6`）。
-
-- 在线访问：**https://chengdu.breakeros.com**
-- 制作：**@天才留学生**
-- 数据 © OpenStreetMap 贡献者（ODbL 1.0）；three.js / WebGPU / TSL
-- 引擎基于 MIT 许可的 slop-valencia（其上游 slop-barcelona / slop-newyork）
-
-## 操作
-
-| 操作 | 按键 |
-| --- | --- |
-| 出行方式 | `1` 步行 · `2` 打车 · `3` 骑车 · `4` 电马儿 · `5` 直升机 · `6` 骑熊猫 |
-| 移动 | `W/S` 前后 · `A/D` 转向（熊猫：`Shift` 冲刺、`Space` 蹦一下） |
-| 镜头 | `V` 切换 · `7/8/9/0` 直接选 · 拖动环视 · 滚轮缩放 |
-| 其它 | `M` 地图 · `N` 静音 · `H` 清爽视图 · `Esc` 关闭弹层 |
-
-需要支持 WebGPU 的浏览器（新版 Chrome / Edge / Safari）。
+制作：@天才留学生 · 数据 © OpenStreetMap 贡献者（ODbL 1.0）

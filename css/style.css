@@ -317,6 +317,18 @@ body.hud-minimized .hud-top-left { transform: translateY(-10px); }
 body.hud-minimized .hud-bottom-left,
 body.hud-minimized .hud-bottom-right { transform: translateY(12px); }
 body.hud-minimized .hud-bottom-center { transform: translate(-50%, 12px); }
+body.hud-minimized .site-credit { display: none; }
+
+/* OpenStreetMap attribution (ODbL 1.0): a quiet footer line under the travel-mode bar */
+.site-credit {
+  font-size: 10px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+  pointer-events: none;
+  white-space: nowrap;
+}
 
 body.hud-minimized .toolbar > :not(#btn-toggle-hud) {
   display: none;
@@ -387,13 +399,6 @@ html[lang='zh-CN'] .mta-bullet.loader-bullet {
   color: var(--text);
   text-decoration: underline;
   text-underline-offset: 3px;
-}
-
-.brand-data {
-  margin-top: 2px;
-  font-size: 10px;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.42);
 }
 
 .brand-credits strong {
@@ -1311,14 +1316,7 @@ body[data-mode='helicopter'] .gauge-alt {
   .brand-heading h1,
   .brand-subtitle { display: none; }
   /* The Chinese credit line wraps past the 44px brand bar on phones: keep the bar clear (credits stay in the page) */
-  .brand-data {
-  margin-top: 2px;
-  font-size: 10px;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.42);
-}
-
-.brand-credits strong {
+  .brand-credits strong {
   font-weight: 700;
   color: rgba(255, 255, 255, 0.92);
 }

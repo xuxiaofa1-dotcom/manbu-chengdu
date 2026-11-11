@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>漫步成都 · 1:1 三维城市漫游</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./cover.jpg" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="漫步成都" />
+  <meta property="og:title" content="漫步成都 · 1:1 三维城市漫游" />
+  <meta property="og:description" content="按真实比例重建的成都：天府广场、春熙路、宽窄巷子、锦里、安顺廊桥、望江楼……步行、打车、骑车、直升机，还能骑大熊猫逛一圈。" />
+  <meta property="og:image" content="https://chengdu.breakeros.com/cover.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#0e0f12" />
+  <meta name="description" content="漫步成都：用 three.js、WebGPURenderer 与 TSL 搭出的成都 1:1 三维城市漫游。天府广场、春熙路、宽窄巷子、锦里、九眼桥与锦江，街道、江水和楼房都照 OpenStreetMap 实测而来；步行、打车、骑车、电马儿、直升机，还可以骑熊猫逛一圈。" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <!-- three.js dev branch pinned to a commit (builds committed to mrdoob/three.js@dev, served by jsDelivr) -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/gh/mrdoob/three.js@f17eb5d689094a3fbd4cd0d64d54729a48036ce0/build/three.webgpu.js",
+        "three/webgpu": "https://cdn.jsdelivr.net/gh/mrdoob/three.js@f17eb5d689094a3fbd4cd0d64d54729a48036ce0/build/three.webgpu.js",
+        "three/tsl": "https://cdn.jsdelivr.net/gh/mrdoob/three.js@f17eb5d689094a3fbd4cd0d64d54729a48036ce0/build/three.tsl.js",
+        "three/addons/": "https://cdn.jsdelivr.net/gh/mrdoob/three.js@f17eb5d689094a3fbd4cd0d64d54729a48036ce0/examples/jsm/"
+      }
+    }
+  </script>
+  <!-- Fetch the city modules in parallel before stylesheets; the module graph controls evaluation order. -->
+  <link rel="modulepreload" href="./js/cd-geodata.js" />
+  <link rel="modulepreload" href="./js/cd-metro.js" />
+  <link rel="modulepreload" href="./js/city-config.js" />
+  <link rel="modulepreload" href="./js/tsl-materials.js" />
+  <link rel="modulepreload" href="./js/trees.js" />
+  <link rel="modulepreload" href="./js/actor-models.js" />
+  <link rel="modulepreload" href="./js/vehicle-lights.js" />
+  <link rel="modulepreload" href="./js/vehicle-physics.js" />
+  <link rel="modulepreload" href="./js/pedestrians.js" />
+  <link rel="modulepreload" href="./js/lighting.js" />
+  <link rel="modulepreload" href="./js/city-grid.js" />
+  <link rel="modulepreload" href="./js/cd-ground.js" />
+  <link rel="modulepreload" href="./js/ground-photo.js" />
+  <link rel="modulepreload" href="./js/cd-buildings.js" />
+  <link rel="modulepreload" href="./js/cd-shops.js" />
+  <link rel="modulepreload" href="./js/shop-signs-kinds.js" />
+  <link rel="modulepreload" href="./js/shop-signs.js" />
+  <link rel="modulepreload" href="./js/buildings.js" />
+  <link rel="modulepreload" href="./js/vlc-facade-rules.js" />
+  <link rel="modulepreload" href="./js/vlc-balconies.js" />
+  <link rel="modulepreload" href="./js/vlc-cables.js" />
+  <link rel="modulepreload" href="./js/cd-fences.js" />
+  <link rel="modulepreload" href="./js/vlc-fence-mesh.js" />
+  <link rel="modulepreload" href="./js/cd-landmarks.js" />
+  <link rel="modulepreload" href="./js/cd-landmarks-old.js" />
+  <link rel="modulepreload" href="./js/cd-landmarks-new.js" />
+  <link rel="modulepreload" href="./js/cd-panda.js" />
+  <link rel="modulepreload" href="./js/cd-trees.js" />
+  <link rel="modulepreload" href="./js/cd-lamps.js" />
+  <link rel="modulepreload" href="./js/street-lamps-plan.js" />
+  <link rel="modulepreload" href="./js/street-lamps.js" />
+  <link rel="modulepreload" href="./js/street-details.js" />
+  <link rel="modulepreload" href="./js/road-network.js" />
+  <link rel="modulepreload" href="./js/cd-drains.js" />
+  <link rel="modulepreload" href="./js/vlc-ground-decals.js" />
+  <link rel="modulepreload" href="./js/vlc-markings-decode.js" />
+  <link rel="modulepreload" href="./js/cd-markings.js" />
+  <link rel="modulepreload" href="./js/cd-stone-lanes.js" />
+  <link rel="modulepreload" href="./js/road-paint.js" />
+  <link rel="modulepreload" href="./js/traffic.js" />
+  <link rel="modulepreload" href="./js/cd-footfall.js" />
+  <link rel="modulepreload" href="./js/cd-parked.js" />
+  <link rel="modulepreload" href="./js/plaza-crowd.js" />
+  <link rel="modulepreload" href="./js/pedestrian-system.js" />
+  <link rel="modulepreload" href="./js/pedestrian-routes.js" />
+  <link rel="modulepreload" href="./js/controllers.js" />
+  <link rel="modulepreload" href="./js/cameras.js" />
+  <link rel="modulepreload" href="./js/city-map.js" />
+  <link rel="modulepreload" href="./js/cd-copy.js" />
+  <link rel="modulepreload" href="./js/main.js" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap" />
+  <link rel="stylesheet" href="./css/style.css?v=20261111-chengdu" />
+  <script type="module" src="./js/main.js"></script>
+</head>
+<body>
+  <!-- Icon sprite (24 × 24 stroke icons, drawn in currentColor) -->
+  <svg class="icon-sprite" width="0" height="0" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="i-walk" viewBox="0 0 24 24"><circle cx="13" cy="4.4" r="2"/><path d="M12.3 8.2 10.8 13.8M10.8 13.8 9.2 17.2 7.2 20.5M10.8 13.8l2.4 3 1.6 3.8M12.3 8.6 9.6 10.2l-.8 2.6M12.3 8.6l2.1 2.4 2.4.8"/></symbol>
+      <symbol id="i-car" viewBox="0 0 24 24"><path d="M9.6 4.8V3.4a.6.6 0 0 1 .6-.6h3.6a.6.6 0 0 1 .6.6v1.4"/><path d="m5.2 10.5 1.4-4.1A2.2 2.2 0 0 1 8.7 4.8h6.6a2.2 2.2 0 0 1 2.1 1.6l1.4 4.1"/><rect x="3" y="10.5" width="18" height="6.5" rx="2"/><path d="M6 17v2.6M18 17v2.6M6.6 13.8h1.6M15.8 13.8h1.6"/></symbol>
+      <symbol id="i-bike" viewBox="0 0 24 24"><circle cx="5.5" cy="16.5" r="3.6"/><circle cx="18.5" cy="16.5" r="3.6"/><path d="M5.5 16.5 9.3 9.6h6.3M11.6 16.5 9.3 9.6M11.6 16.5l4-6.9M5.5 16.5h6.1M15.6 9.6l2.9 6.9M15.6 9.6 14.8 7h2.4M8 8.4h2.8"/></symbol>
+      <symbol id="i-scooter" viewBox="0 0 24 24"><circle cx="5" cy="18" r="2.4"/><circle cx="19" cy="18" r="2.4"/><path d="M5 18h1.6l1.2-1.6h7.4L19 18M17.2 17.4 14.6 4.2M12.4 4.2h4.4"/></symbol>
+      <symbol id="i-heli" viewBox="0 0 24 24"><path d="M3.5 4h15M11 4v3.2"/><path d="M6 12.2a5 5 0 0 1 5-5h1.6a4.4 4.4 0 0 1 4.4 4.4V15H8.8A2.8 2.8 0 0 1 6 12.2z"/><path d="M17 11h4.2M21.2 8.8v4.4M7 19h10.5M9.5 15v4M15 15v4"/></symbol>
+      <symbol id="i-paw" viewBox="0 0 24 24"><circle cx="5.7" cy="9.7" r="2"/><circle cx="9.3" cy="6.5" r="2.1"/><circle cx="14.7" cy="6.5" r="2.1"/><circle cx="18.3" cy="9.7" r="2"/><path d="M12 12.6c2.9 0 5.2 1.8 5.2 4 0 1.8-1.6 3.2-3.8 3.6H10.6c-2.2-.4-3.8-1.8-3.8-3.6 0-2.2 2.3-4 5.2-4z"/></symbol>
+      <symbol id="i-golden" viewBox="0 0 24 24"><path d="M3 17.5h18M7 17.5a5 5 0 0 1 10 0M12 5v3M5.6 9.6l2 1.6M18.4 9.6l-2 1.6M7.5 21h9"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.8v2.1M12 19.1v2.1M2.8 12h2.1M19.1 12h2.1M5.5 5.5 7 7M17 17l1.5 1.5M5.5 18.5 7 17M17 7l1.5-1.5"/></symbol>
+      <symbol id="i-twilight" viewBox="0 0 24 24"><path d="M3 15.5h18M7.5 19h9M8 15.5a4 4 0 0 1 8 0M17.5 4v3.2M15.9 5.6h3.2M7 7.4v1.8M6.1 8.3h1.8"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M19.5 14.6A7.8 7.8 0 0 1 9.4 4.5a7.8 7.8 0 1 0 10.1 10.1z"/></symbol>
+      <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21.2s-6.6-5.7-6.6-11.2a6.6 6.6 0 0 1 13.2 0c0 5.5-6.6 11.2-6.6 11.2z"/><circle cx="12" cy="10" r="2.4"/></symbol>
+      <symbol id="i-map" viewBox="0 0 24 24"><path d="M9 4.5 3.5 6.6v13l5.5-2.1 6 2.1 5.5-2.1v-13L15 6.6 9 4.5zM9 4.5v13M15 6.6v13"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></symbol>
+      <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M3.5 3.5l17 17M10.6 5.6c.5-.1.9-.1 1.4-.1 6 0 9.5 6.5 9.5 6.5a16 16 0 0 1-2.4 3.2M6.6 6.6A15.6 15.6 0 0 0 2.5 12s3.5 6.5 9.5 6.5c1.6 0 3.1-.4 4.4-1.1M9.9 9.9a2.8 2.8 0 0 0 4.2 4.2"/></symbol>
+      <symbol id="i-sound" viewBox="0 0 24 24"><path d="m11 4-5 4H3v8h3l5 4V4ZM15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14"/></symbol>
+      <symbol id="i-sound-off" viewBox="0 0 24 24"><path d="m11 4-5 4H3v8h3l5 4V4ZM16 9l6 6M22 9l-6 6"/></symbol>
+      <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m7 9.5 5 5 5-5"/></symbol>
+      <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M14.5 6.5 9 12l5.5 5.5"/></symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9.5 6.5 5.5 5.5-5.5 5.5"/></symbol>
+      <symbol id="i-camera" viewBox="0 0 24 24"><rect x="2.8" y="6.5" width="12.4" height="11" rx="2.4"/><path d="m15.2 10.4 6-3.4v10l-6-3.4"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13"/></symbol>
+      <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5.5 12h13"/></symbol>
+      <symbol id="i-locate" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.4"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><path d="M12 2.5v3.1M12 18.4v3.1M2.5 12h3.1M18.4 12h3.1"/></symbol>
+      <symbol id="i-fit" viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.3"/><path d="m20 20-4.6-4.6"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="m6.5 6.5 11 11M17.5 6.5l-11 11"/></symbol>
+    </defs>
+  </svg>
+
+  <!-- Loading Screen -->
+  <div id="loading-overlay" role="status" aria-live="polite">
+    <div class="loader">
+      <span class="mta-bullet loader-bullet" aria-hidden="true">成都</span>
+      <div class="loader-title">漫步成都</div>
+      <div class="loader-track is-indeterminate" aria-hidden="true"><span id="loading-progress" class="loader-fill"></span></div>
+      <div id="loading-status">正在启动 WebGPURenderer 与 TSL 着色器…</div>
+    </div>
+  </div>
+
+  <!-- 3D WebGPU Viewport Container -->
+  <main id="canvas-container" aria-label="漫步成都三维互动视图"></main>
+
+  <!-- Top-Left: Brand & Renderer Telemetry -->
+  <header class="hud hud-top-left">
+    <div class="panel brand">
+      <span class="mta-bullet" aria-hidden="true">成都</span>
+      <div class="brand-titles">
+        <div class="brand-heading">
+          <h1>漫步成都</h1>
+        </div>
+        <div class="brand-subtitle">成都 · 1:1 三维城市漫游 · three.js · WebGPU · <span id="hud-fps" class="fps-ok">60</span> fps</div>
+        <div class="brand-credits">制作 <strong>@天才留学生</strong></div>
+        <div class="brand-data">数据 © OpenStreetMap 贡献者（ODbL 1.0）· three.js · WebGPU · TSL</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Top-Right Toolbar: Time of Day, Teleport, Map & Clean View -->
+  <div class="hud hud-top-right">
+    <div id="hud-toolbar" class="panel toolbar">
+      <div class="time-switch" role="group" aria-label="光线与时刻">
+        <button id="time-golden" class="time-btn active" data-time="golden" type="button" title="黄昏时刻">
+          <svg class="icon" aria-hidden="true"><use href="#i-golden"/></svg><span class="seg-label">黄昏</span>
+        </button>
+        <button id="time-midday" class="time-btn" data-time="midday" type="button" title="正午阳光">
+          <svg class="icon" aria-hidden="true"><use href="#i-sun"/></svg><span class="seg-label">正午</span>
+        </button>
+        <button id="time-twilight" class="time-btn" data-time="twilight" type="button" title="蓝调时刻">
+          <svg class="icon" aria-hidden="true"><use href="#i-twilight"/></svg><span class="seg-label">蓝调</span>
+        </button>
+        <button id="time-midnight" class="time-btn" data-time="midnight" type="button" title="深夜 23:00">
+          <svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg><span class="seg-label">夜晚</span>
+        </button>
+      </div>
+      <span class="toolbar-divider" aria-hidden="true"></span>
+      <button id="btn-teleport" class="tool-btn" type="button" popovertarget="teleport-popover" title="传送到城里任意一处">
+        <svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg><span class="tool-label">去往</span><svg class="icon icon-sm" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+      </button>
+      <button id="btn-open-map" class="tool-btn" type="button" title="成都地图 [M]">
+        <svg class="icon" aria-hidden="true"><use href="#i-map"/></svg><span class="tool-label">地图</span><kbd>M</kbd>
+      </button>
+      <span class="toolbar-divider" aria-hidden="true"></span>
+      <button id="btn-sound" class="tool-btn icon-only" type="button" title="静音 [N]" aria-label="静音" aria-pressed="true">
+        <svg class="icon" aria-hidden="true"><use href="#i-sound"/></svg>
+      </button>
+      <button id="btn-toggle-hud" class="tool-btn icon-only" type="button" title="清爽视图：隐藏界面 [H]" aria-label="隐藏界面" aria-pressed="false">
+        <svg class="icon icon-hide" aria-hidden="true"><use href="#i-eye"/></svg><svg class="icon icon-show" aria-hidden="true"><use href="#i-eye-off"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Teleport Destinations (native popover: light-dismiss & Esc) -->
+  <div id="teleport-popover" class="popover" popover data-side="below" data-anchor="hud-toolbar" aria-label="传送到城里任意一处">
+    <div class="pop-title">去往</div>
+    <button id="tp-tianfu" class="pop-item tp-btn" data-teleport="tianfu" type="button"><span class="pop-name">天府广场</span><span class="pop-sub">成都的正中心</span></button>
+    <button id="tp-chunxi" class="pop-item tp-btn" data-teleport="chunxi" type="button"><span class="pop-name">春熙路</span><span class="pop-sub">人挤人的那条街</span></button>
+    <button id="tp-taikooli" class="pop-item tp-btn" data-teleport="taikooli" type="button"><span class="pop-name">远洋太古里</span><span class="pop-sub">灰瓦玻璃房子</span></button>
+    <button id="tp-ifs" class="pop-item tp-btn" data-teleport="ifs" type="button"><span class="pop-name">成都IFS·爬墙熊猫</span><span class="pop-sub">著名的爬墙熊猫</span></button>
+    <button id="tp-museum" class="pop-item tp-btn" data-teleport="museum" type="button"><span class="pop-name">成都博物馆</span><span class="pop-sub">金灿灿的铜网</span></button>
+    <button id="tp-kuanzhai" class="pop-item tp-btn" data-teleport="kuanzhai" type="button"><span class="pop-name">宽窄巷子</span><span class="pop-sub">少城旧巷 · 青砖灰瓦</span></button>
+    <button id="tp-renminpark" class="pop-item tp-btn" data-teleport="renminpark" type="button"><span class="pop-name">人民公园·鹤鸣茶社</span><span class="pop-sub">竹椅盖碗茶</span></button>
+    <button id="tp-wenshu" class="pop-item tp-btn" data-teleport="wenshu" type="button"><span class="pop-name">文殊院</span><span class="pop-sub">香火与银杏</span></button>
+    <button id="tp-wuhou" class="pop-item tp-btn" data-teleport="wuhou" type="button"><span class="pop-name">武侯祠</span><span class="pop-sub">丞相祠堂何处寻</span></button>
+    <button id="tp-jinli" class="pop-item tp-btn" data-teleport="jinli" type="button"><span class="pop-name">锦里</span><span class="pop-sub">灯笼串起的巷子</span></button>
+    <button id="tp-qingyang" class="pop-item tp-btn" data-teleport="qingyang" type="button"><span class="pop-name">青羊宫</span><span class="pop-sub">八卦亭</span></button>
+    <button id="tp-dufu" class="pop-item tp-btn" data-teleport="dufu" type="button"><span class="pop-name">杜甫草堂</span><span class="pop-sub">茅屋与竹林</span></button>
+    <button id="tp-anshun" class="pop-item tp-btn" data-teleport="anshun" type="button"><span class="pop-name">安顺廊桥</span><span class="pop-sub">锦江上的廊桥</span></button>
+    <button id="tp-jiuyan" class="pop-item tp-btn" data-teleport="jiuyan" type="button"><span class="pop-name">九眼桥</span><span class="pop-sub">酒馆与夜游</span></button>
+    <button id="tp-wangjiang" class="pop-item tp-btn" data-teleport="wangjiang" type="button"><span class="pop-name">望江楼</span><span class="pop-sub">锦江畔的竹影</span></button>
+    <button id="tp-tvTower" class="pop-item tp-btn" data-teleport="tvTower" type="button"><span class="pop-name">四川广播电视塔</span><span class="pop-sub">339 米的塔</span></button>
+  </div>
+
+  <!-- Bottom-Left: Street-Name Signs & Live GPS Radar Minimap -->
+  <div class="hud hud-bottom-left">
+    <div id="hud-location" class="location" aria-live="off"></div>
+    <aside id="minimap-card" class="panel radar" aria-label="街区小地图" title="打开成都地图 [M]">
+      <canvas id="minimap-canvas"></canvas>
+      <span class="radar-north" aria-hidden="true">N</span>
+      <kbd class="radar-key">M</kbd>
+    </aside>
+  </div>
+
+  <!-- Bottom-Center: Third-Person Mode Switcher & Controls Guide -->
+  <footer class="hud hud-bottom-center">
+    <div id="hud-controls-hint" class="controls-hint"></div>
+    <nav id="mode-switch" class="panel mode-switch" aria-label="出行方式">
+      <span class="mode-indicator" aria-hidden="true"></span>
+      <button id="mode-person" class="mode-btn" data-mode="person" type="button" title="步行 [1]">
+        <svg class="icon" aria-hidden="true"><use href="#i-walk"/></svg><span class="mode-label">步行</span><kbd>1</kbd>
+      </button>
+      <button id="mode-car" class="mode-btn active" data-mode="car" type="button" title="打车 · 成都出租 [2]">
+        <svg class="icon" aria-hidden="true"><use href="#i-car"/></svg><span class="mode-label">打车</span><kbd>2</kbd>
+      </button>
+      <button id="mode-cyclist" class="mode-btn" data-mode="cyclist" type="button" title="骑车 [3]">
+        <svg class="icon" aria-hidden="true"><use href="#i-bike"/></svg><span class="mode-label">骑车</span><kbd>3</kbd>
+      </button>
+      <button id="mode-scooter" class="mode-btn" data-mode="scooter" type="button" title="电马儿 [4]">
+        <svg class="icon" aria-hidden="true"><use href="#i-scooter"/></svg><span class="mode-label">电马儿</span><kbd>4</kbd>
+      </button>
+      <button id="mode-helicopter" class="mode-btn" data-mode="helicopter" type="button" title="直升机 [5]">
+        <svg class="icon" aria-hidden="true"><use href="#i-heli"/></svg><span class="mode-label">直升机</span><kbd>5</kbd>
+      </button>
+      <!-- 第 6 种出行方式：#mode-panda，图标用新增的熊猫爪印符号 #i-paw -->
+      <button id="mode-panda" class="mode-btn" data-mode="panda" type="button" title="骑大熊猫 [6]">
+        <svg class="icon" aria-hidden="true"><use href="#i-paw"/></svg><span class="mode-label">骑熊猫</span><kbd>6</kbd>
+      </button>
+    </nav>
+  </footer>
+
+  <!-- Bottom-Right: Speed Cluster & Camera Switcher -->
+  <div class="hud hud-bottom-right">
+    <section id="hud-cluster" class="panel cluster" aria-label="速度与镜头">
+      <div class="gauge">
+        <div class="gauge-top">
+          <span id="hud-active-mode" class="gauge-label">成都出租</span>
+          <span class="gauge-alt"><span class="gauge-alt-label">海拔</span> <span id="hud-altitude">0</span> 米</span>
+        </div>
+        <div class="gauge-speed"><span id="hud-speed">0</span><span class="gauge-unit">公里/小时</span></div>
+        <div class="gauge-meter" aria-hidden="true"><span id="hud-speed-meter"></span></div>
+      </div>
+      <div id="camera-switch" class="camera-switch">
+        <button id="cam-prev" class="icon-btn" type="button" title="上一个镜头" aria-label="上一个镜头">
+          <svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg>
+        </button>
+        <button id="cam-menu-btn" class="camera-current" type="button" popovertarget="camera-popover" title="全部镜头 [V 切换]">
+          <svg class="icon" aria-hidden="true"><use href="#i-camera"/></svg><span id="hud-active-camera">跟随镜头</span><kbd>V</kbd>
+        </button>
+        <button id="cam-next" class="icon-btn" type="button" title="下一个镜头 [V]" aria-label="下一个镜头">
+          <svg class="icon" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Touch input stays available in clean view; the map temporarily suspends it. -->
+  <section id="touch-controls" aria-label="触屏操作" hidden>
+    <div class="touch-movement">
+      <div id="touch-stick" role="group" aria-label="移动摇杆：上下拖动前进后退，左右拖动转向">
+        <span class="touch-stick-axis" aria-hidden="true"></span>
+        <span id="touch-stick-knob" aria-hidden="true"></span>
+      </div>
+      <span class="touch-caption">前进 · 转向</span>
+    </div>
+    <p class="touch-look-hint">拖动环视 · 双指缩放</p>
+    <div class="touch-actions" role="group" aria-label="按住执行动作">
+      <button class="touch-action" data-touch-action="up" type="button" aria-label="跳起" aria-pressed="false" hidden>
+        <span aria-hidden="true">↑</span><span data-touch-label="up">跳起</span>
+      </button>
+      <button class="touch-action" data-touch-action="down" type="button" aria-label="下降" aria-pressed="false" hidden>
+        <span aria-hidden="true">↓</span><span data-touch-label="down">下降</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- All Cameras: 3 Follow Cameras + Chengdu Vantage Cameras + Auto-Director Drone -->
+  <div id="camera-popover" class="popover" popover data-side="above" data-anchor="hud-cluster" data-align="hud-cluster" aria-label="镜头">
+    <div class="pop-title">跟随机位</div>
+    <button id="cam-chase" class="pop-item cam-btn active" data-camera="chase" type="button"><span class="pop-name">跟随镜头</span><kbd>7</kbd></button>
+    <button id="cam-action" class="pop-item cam-btn" data-camera="action" type="button"><span class="pop-name">低角度特写</span><kbd>8</kbd></button>
+    <button id="cam-pov" class="pop-item cam-btn" data-camera="pov" type="button"><span class="pop-name">第一人称 / 车头</span><kbd>9</kbd></button>
+    <div class="pop-title">城市全景</div>
+    <button id="cam-tianfu" class="pop-item cam-btn" data-camera="tianfu" type="button"><span class="pop-name">天府广场</span><kbd>0</kbd></button>
+    <button id="cam-kuanzhai" class="pop-item cam-btn" data-camera="kuanzhai" type="button"><span class="pop-name">宽窄巷子</span></button>
+    <button id="cam-anshun" class="pop-item cam-btn" data-camera="anshun" type="button"><span class="pop-name">安顺廊桥</span></button>
+    <button id="cam-wangjiang" class="pop-item cam-btn" data-camera="wangjiang" type="button"><span class="pop-name">望江楼</span></button>
+    <button id="cam-ifs" class="pop-item cam-btn" data-camera="ifs" type="button"><span class="pop-name">爬墙熊猫</span></button>
+    <button id="cam-taikooli" class="pop-item cam-btn" data-camera="taikooli" type="button"><span class="pop-name">远洋太古里</span></button>
+    <button id="cam-drone" class="pop-item cam-btn" data-camera="drone" type="button"><span class="pop-name">自动航拍</span></button>
+  </div>
+
+  <!-- Full-Screen Interactive Chengdu Street Map ([M]) -->
+  <section id="fullmap-modal" class="fullmap-modal hidden" role="dialog" aria-modal="true" aria-label="成都互动地图">
+    <div id="fullmap-canvas-wrap" class="fullmap-canvas-wrap">
+      <canvas id="fullmap-canvas"></canvas>
+    </div>
+
+    <div class="fullmap-header">
+      <div class="panel fullmap-title">
+        <span class="mta-bullet" aria-hidden="true">成都</span>
+        <div>
+          <h2>成都地图</h2>
+          <p id="fullmap-player-info" class="fullmap-subtitle">你正在「天府广场」</p>
+        </div>
+      </div>
+      <label class="panel fullmap-search-wrap">
+        <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+        <input id="fullmap-search" class="fullmap-search" type="text" placeholder="搜索街道和地点 — 春熙路、宽窄巷子、锦里、九眼桥…" aria-label="搜索街道或地点" autocomplete="off" spellcheck="false" />
+      </label>
+      <button id="close-fullmap-btn" class="panel tool-btn fullmap-close" type="button" title="关闭地图 [M / Esc]">
+        <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg><span class="tool-label">关闭</span><kbd>Esc</kbd>
+      </button>
+    </div>
+
+    <div class="map-controls">
+      <div class="panel map-compass" title="正北 · 成都街巷与正北大约差 29°">
+        <svg viewBox="0 0 44 44" aria-hidden="true">
+          <g id="map-compass-needle">
+            <path d="M22 9.5 25.6 22h-7.2z" fill="#f05a4f"/>
+            <path d="M22 34.5 25.6 22h-7.2z" fill="rgba(255,255,255,0.72)"/>
+            <text x="22" y="8" text-anchor="middle">N</text>
+          </g>
+        </svg>
+      </div>
+      <div class="panel map-zoom">
+        <button id="map-zoom-in" class="icon-btn" type="button" title="放大" aria-label="放大"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg></button>
+        <button id="map-zoom-out" class="icon-btn" type="button" title="缩小" aria-label="缩小"><svg class="icon" aria-hidden="true"><use href="#i-minus"/></svg></button>
+      </div>
+      <div class="panel map-zoom">
+        <button id="map-center-player" class="icon-btn" type="button" title="我附近" aria-label="回到我的位置"><svg class="icon" aria-hidden="true"><use href="#i-locate"/></svg></button>
+        <button id="map-view-all" class="icon-btn" type="button" title="全城" aria-label="查看全城"><svg class="icon" aria-hidden="true"><use href="#i-fit"/></svg></button>
+      </div>
+    </div>
+
+    <div class="fullmap-footer">
+      <div class="panel fullmap-status">
+        <span id="fullmap-hover-info">点一下就去那儿，顺手画出 GPS 路线 · 拖动平移 · 滚轮缩放</span>
+      </div>
+    </div>
+
+    <div class="panel fullmap-legend">
+      <span class="legend-item"><span class="legend-swatch player-swatch"></span>你</span>
+      <span class="legend-item"><span class="legend-swatch landmark-swatch"></span>地标</span>
+      <span class="legend-item"><span class="legend-swatch gps-swatch"></span>GPS 路线</span>
+      <span id="fullmap-counts" class="legend-counts"></span>
+    </div>
+  </section>
+
+</body>
+</html>
